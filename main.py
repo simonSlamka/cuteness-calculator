@@ -12,6 +12,8 @@ def main():
 
     cutenessScore = cutenessCalculator.calculate_cuteness(args.imgPath)
 
+    cutenessCalculator.calculate_feature_ranges()
+
     print("Cuteness score: {:.2f}".format(cutenessScore))
 
 if __name__ == "__main__":

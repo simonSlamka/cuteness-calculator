@@ -18,8 +18,8 @@ class LandmarksDetector:
 
         landmarks = self.detector(gray, 1)
 
-        if len(landmarks) == 0:
-            raise ValueError('No landmarks detected in {}'.format(imagePath))
+        # if len(landmarks) == 0:
+        #     raise ValueError('No landmarks detected in {}'.format(imagePath))
 
         # For each detected face, find the landmark.
         for (i, rect) in enumerate(landmarks):

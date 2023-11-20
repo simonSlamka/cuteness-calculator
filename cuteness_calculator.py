@@ -16,7 +16,6 @@ class CutenessCalculator:
         minValues = np.inf * np.ones(7)
         maxValues = -np.inf * np.ones(7)
 
-        # Check if the ranges are already calculated and stored in /tmp
         if os.path.exists('/tmp/minValues.npy') and os.path.exists("/tmp/maxValues.npy"):
             minValues = np.load("/tmp/minValues.npy")
             maxValues = np.load("/tmp/maxValues.npy")
@@ -47,11 +46,10 @@ class CutenessCalculator:
                     minValues = np.minimum(minValues, features)
                     maxValues = np.maximum(maxValues, features)
 
-            # Save the calculated ranges in /tmp
             np.save("/tmp/minValues.npy", minValues)
             np.save("/tmp/maxValues.npy", maxValues)
 
-            logging.info(f"Calculated feature ranges for {i} images")
+            logging.info(f"Calculated feature intervals for {i} images")
 
         return minValues, maxValues
 

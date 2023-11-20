@@ -4,6 +4,7 @@ from utils import calculate_euclidean_distance, aspect_ratio
 from landmarks_detector import LandmarksDetector
 import os
 import logging
+import tempfile
 
 logging.basicConfig(level=logging.INFO)
 

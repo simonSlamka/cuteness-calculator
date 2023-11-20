@@ -3,41 +3,55 @@ import numpy as np
 from utils import calculate_euclidean_distance, aspect_ratio
 from landmarks_detector import LandmarksDetector
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 class CutenessCalculator:
     def __init__(self, predictorPath):
         self.landmarksDetector = LandmarksDetector(predictorPath)
 
-    def calculate_feature_ranges(self, directoryPath = "/home/simtoon/smtn_girls_likeOrNot/pos"):
+    def calculate_feature_ranges(self, directoryPath):
         directoryPath = os.path.abspath(directoryPath)
         minValues = np.inf * np.ones(7)
         maxValues = -np.inf * np.ones(7)
 
-        i = 0
+        # Check if the ranges are already calculated and stored in /tmp
+        if os.path.exists('/tmp/minValues.npy') and os.path.exists("/tmp/maxValues.npy"):
+            minValues = np.load("/tmp/minValues.npy")
+            maxValues = np.load("/tmp/maxValues.npy")
+            logging.info("Loaded feature ranges from /tmp")
+        else:
+            i = 0
+            logging.info(f"Calculating feature ranges for images in {directoryPath}")
 
-        for filename in os.listdir(directoryPath):
-            if filename.endswith(".jpg") or filename.endswith(".png"):
-                imagePath = os.path.join(directoryPath, filename)
-                landmarks = self.landmarksDetector.get_landmarks(imagePath)
+            for filename in os.listdir(directoryPath):
+                if filename.endswith(".jpg") or filename.endswith(".png"):
+                    imagePath = os.path.join(directoryPath, filename)
+                    landmarks = self.landmarksDetector.get_landmarks(imagePath)
 
-                if landmarks is None:
-                    continue
+                    if landmarks is None:
+                        continue
 
-                i += 1
+                    i += 1
 
-                eyeAspectRatio = aspect_ratio(np.concatenate((landmarks[36:42], landmarks[42:48]))) / 2.0
-                faceAspectRatio = calculate_euclidean_distance(landmarks[0], landmarks[16]) / calculate_euclidean_distance(landmarks[8], landmarks[27])
-                eyeArea = self.calculate_eye_size(landmarks)
-                cheekFullness = self.calculate_cheek_fullness(landmarks)
-                smileWidth = self.calculate_smile_width(landmarks)
-                facialProportions = np.mean(self.calculate_facial_proportions(landmarks))
-                eyeToFaceRatio = self.calculate_eye_to_face_ratio(landmarks, eyeArea)
+                    eyeAspectRatio = aspect_ratio(np.concatenate((landmarks[36:42], landmarks[42:48]))) / 2.0
+                    faceAspectRatio = calculate_euclidean_distance(landmarks[0], landmarks[16]) / calculate_euclidean_distance(landmarks[8], landmarks[27])
+                    eyeArea = self.calculate_eye_size(landmarks)
+                    cheekFullness = self.calculate_cheek_fullness(landmarks)
+                    smileWidth = self.calculate_smile_width(landmarks)
+                    facialProportions = np.mean(self.calculate_facial_proportions(landmarks))
+                    eyeToFaceRatio = self.calculate_eye_to_face_ratio(landmarks, eyeArea)
 
-                features = np.array([eyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio])
-                minValues = np.minimum(minValues, features)
-                maxValues = np.maximum(maxValues, features)
+                    features = np.array([eyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio])
+                    minValues = np.minimum(minValues, features)
+                    maxValues = np.maximum(maxValues, features)
 
-        print(f"Number of images: {i}")
+            # Save the calculated ranges in /tmp
+            np.save("/tmp/minValues.npy", minValues)
+            np.save("/tmp/maxValues.npy", maxValues)
+
+            logging.info(f"Calculated feature ranges for {i} images")
 
         return minValues, maxValues
 
@@ -69,7 +83,7 @@ class CutenessCalculator:
         ratio = eyeArea / faceArea
         return ratio
 
-    def calculate_cuteness(self, imagePath):
+    def calculate_cuteness(self, imagePath, minValues, maxValues):
         """
         Calculate the cuteness of a face in an image.
         """
@@ -89,8 +103,6 @@ class CutenessCalculator:
         faceHeight = calculate_euclidean_distance(landmarks[8], landmarks[27])
 
         faceAspectRatio = faceWidth / faceHeight
-
-        minValues, maxValues = self.calculate_feature_ranges()
 
         cutenessScore = self._calculate_score(avgEyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, minValues, maxValues)
 

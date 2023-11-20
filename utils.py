@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 from scipy.spatial import distance as dist
 
-def load_image(image_path):
+def load_image(imagePath):
     """
     Load an image from a file path.
     """
-    image = cv2.imread(image_path)
+    image = cv2.imread(imagePath)
     return image
 
 def convert_to_gray(image):

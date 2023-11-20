@@ -4,26 +4,25 @@ import numpy as np
 from utils import load_image, convert_to_gray, resize_image
 
 class LandmarksDetector:
-    def __init__(self, predictor_path):
+    def __init__(self, predictorPath):
         self.detector = dlib.get_frontal_face_detector()
-        self.predictor = dlib.shape_predictor(predictor_path)
+        self.predictor = dlib.shape_predictor(predictorPath)
 
-    def get_landmarks(self, image_path):
+    def get_landmarks(self, imagePath):
         """
         Get the facial landmarks from an image.
         """
-        image = load_image(image_path)
+        image = load_image(imagePath)
         image = resize_image(image)
         gray = convert_to_gray(image)
 
-        # Detect faces in the grayscale image
-        rects = self.detector(gray, 1)
+        landmarks = self.detector(gray, 1)
 
-        if len(rects) == 0:
-            raise ValueError('No landmarks detected in {}'.format(image_path))
+        if len(landmarks) == 0:
+            raise ValueError('No landmarks detected in {}'.format(imagePath))
 
         # For each detected face, find the landmark.
-        for (i, rect) in enumerate(rects):
+        for (i, rect) in enumerate(landmarks):
             shape = self.predictor(gray, rect)
             shape = self._shape_to_np(shape)
 

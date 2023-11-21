@@ -15,7 +15,8 @@ def main():
 
     cutenessScore = cutenessCalculator.calculate_cuteness(args.imgPath, minValues, maxValues)
 
-    print("Cuteness score: {:.2f}".format(cutenessScore))
+    if cutenessScore is not None:
+        print("Cuteness score: {:.2f}".format(cutenessScore))
 
 if __name__ == "__main__":
     main()

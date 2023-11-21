@@ -1,10 +1,12 @@
 import cv2
 import numpy as np
-from utils import calculate_euclidean_distance, aspect_ratio
+from utils import calculate_euclidean_distance, aspect_ratio, resize_image, check_landmarks_presence
 from landmarks_detector import LandmarksDetector
 import os
 import logging
 import tempfile
+import dlib
+import math
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,11 +28,12 @@ class CutenessCalculator:
             logging.info(f"Calculating feature ranges for images in {directoryPath}")
 
             for filename in os.listdir(directoryPath):
-                if filename.endswith(".jpg") or filename.endswith(".png"):
+                if filename.endswith(".jpg") or filename.endswith(".png") or filename.endswith(".jpeg"):
                     imagePath = os.path.join(directoryPath, filename)
                     landmarks = self.landmarksDetector.get_landmarks(imagePath)
 
-                    if landmarks is None:
+                    if not check_landmarks_presence(landmarks=landmarks):
+                        logging.error(f"Landmarks missing! Skipping image at {imagePath}")
                         continue
 
                     i += 1
@@ -121,11 +124,47 @@ class CutenessCalculator:
         ratio = eyeArea / faceArea
         return ratio
 
+    def draw_features(self, landmarks, image):
+        if image is not None:
+            image = resize_image(image)
+            overlay = image.copy()
+
+            for (x, y) in landmarks:
+                cv2.circle(overlay, (x, y), 1, (0, 0, 255), -1)
+
+            cv2.line(image, tuple(landmarks[36]), tuple(landmarks[45]), (255, 0, 0), 2)
+            cv2.line(image, tuple(landmarks[8]), tuple(landmarks[27]), (255, 0, 0), 2)
+
+            cv2.polylines(image, [np.array([landmarks[33], landmarks[31], landmarks[35]])], True, (0, 255, 0), 2)
+
+            cv2.polylines(image, [np.array(landmarks[17:22])], False, (0, 255, 255), 2)
+            cv2.polylines(image, [np.array(landmarks[22:27])], False, (0, 255, 255), 2)
+
+            cv2.polylines(image, [np.array(landmarks[48:60])], True, (255, 0, 255), 2)
+
+            # faceCenterX = (landmarks[36][0] + landmarks[45][0]) // 2
+            # cv2.line(image, (faceCenterX, landmarks[27][1]), (faceCenterX, landmarks[8][1]), (255, 255, 0), 2)
+
+            # alpha = 0.75
+            # output = cv2.addWeighted(image, alpha, image, 1 - alpha, 0)
+
+            cv2.namedWindow("out", cv2.WINDOW_KEEPRATIO)
+            cv2.imshow("out", image)
+            cv2.resizeWindow("out", 1200, 1200)
+            cv2.waitKey(0)
+
+
     def calculate_cuteness(self, imagePath, minValues, maxValues):
         """
         Calculate the cuteness of a face in an image.
         """
-        landmarks = self.landmarksDetector.get_landmarks(imagePath)
+        landmarks, image = self.landmarksDetector.get_landmarks(imagePath)
+
+        if not check_landmarks_presence(landmarks):
+            logging.error(f"Missing essential landmarks in image at {imagePath}")
+            return None
+
+        self.draw_features(landmarks, image)
 
         leftEye = aspect_ratio(landmarks[42:48])
         rightEye = aspect_ratio(landmarks[36:42])

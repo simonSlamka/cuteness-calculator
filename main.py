@@ -11,7 +11,7 @@ def main():
 
     cutenessCalculator = CutenessCalculator(args.predictorPath)
 
-    minValues, maxValues = cutenessCalculator.calculate_feature_ranges(args.directoryPath)
+    minValues, maxValues = cutenessCalculator.calculate_feature_ranges(args.directoryPath, args.imgPath)
 
     cutenessScore = cutenessCalculator.calculate_cuteness(args.imgPath, minValues, maxValues)
 

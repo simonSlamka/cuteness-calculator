@@ -12,10 +12,10 @@ class CutenessCalculator:
     def __init__(self, predictorPath):
         self.landmarksDetector = LandmarksDetector(predictorPath)
 
-    def calculate_feature_ranges(self, directoryPath):
+    def calculate_feature_ranges(self, directoryPath, imgPath):
         directoryPath = os.path.abspath(directoryPath)
-        minValues = np.inf * np.ones(7)
-        maxValues = -np.inf * np.ones(7)
+        minValues = np.inf * np.ones(12)
+        maxValues = -np.inf * np.ones(12)
 
         if os.path.exists('/tmp/minValues.npy') and os.path.exists("/tmp/maxValues.npy"):
             minValues = np.load("/tmp/minValues.npy")
@@ -43,7 +43,13 @@ class CutenessCalculator:
                     facialProportions = np.mean(self.calculate_facial_proportions(landmarks))
                     eyeToFaceRatio = self.calculate_eye_to_face_ratio(landmarks, eyeArea)
 
-                    features = np.array([eyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio])
+                    noseSize = self.calculate_nose_size(landmarks)
+                    eyebrowShape = self.calculate_eyebrow_shape(landmarks)
+                    lipFullness = self.calculate_lip_fullness(landmarks)
+                    skinSmoothness = self.calculate_skin_smoothness(imgPath)
+                    symmetry = self.calculate_symmetry(landmarks)
+
+                    features = np.array([eyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, noseSize, eyebrowShape, lipFullness, skinSmoothness, symmetry])
                     minValues = np.minimum(minValues, features)
                     maxValues = np.maximum(maxValues, features)
 
@@ -53,6 +59,39 @@ class CutenessCalculator:
             logging.info(f"Calculated feature intervals for {i} images")
 
         return minValues, maxValues
+
+    def calculate_nose_size(self, landmarks):
+        noseTip = landmarks[33]
+        leftNostril = landmarks[31]
+        rightNostril = landmarks[35]
+        noseSize = cv2.contourArea(np.array([noseTip, leftNostril, rightNostril]))
+        return noseSize
+
+    def calculate_eyebrow_shape(self, landmarks):
+        leftEyebrow = landmarks[17:22]
+        rightEyebrow = landmarks[22:27]
+        eyebrowArea = cv2.contourArea(np.array(leftEyebrow)) + cv2.contourArea(np.array(rightEyebrow))
+        return eyebrowArea
+
+    def calculate_lip_fullness(self, landmarks):
+        lips = landmarks[48:60]
+        lipArea = cv2.contourArea(np.array(lips))
+        return lipArea
+
+    def calculate_skin_smoothness(self, imagePath):
+        image = cv2.imread(imagePath)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        smoothness = cv2.Laplacian(blur, cv2.CV_64F).var()
+        return smoothness
+
+    def calculate_symmetry(self, landmarks):
+        leftFace = landmarks[0:16]
+        rightFace = landmarks[16:27]
+        leftArea = cv2.contourArea(np.array(leftFace))
+        rightArea = cv2.contourArea(np.array(rightFace))
+        symmetry = abs(leftArea - rightArea)
+        return symmetry
 
     def calculate_eye_size(self, landmarks):
         rightEye = landmarks[36:42]
@@ -98,31 +137,43 @@ class CutenessCalculator:
         facialProportions = self.calculate_facial_proportions(landmarks)
         eyeToFaceRatio = self.calculate_eye_to_face_ratio(landmarks, eyeArea)
 
+        noseSize = self.calculate_nose_size(landmarks)
+        eyebrowShape = self.calculate_eyebrow_shape(landmarks)
+        lipFullness = self.calculate_lip_fullness(landmarks)
+        skinSmoothness = self.calculate_skin_smoothness(imagePath)
+        symmetry = self.calculate_symmetry(landmarks)
+
         faceWidth = calculate_euclidean_distance(landmarks[0], landmarks[16])
         faceHeight = calculate_euclidean_distance(landmarks[8], landmarks[27])
 
         faceAspectRatio = faceWidth / faceHeight
 
-        cutenessScore = self._calculate_score(avgEyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, minValues, maxValues)
+        cutenessScore = self._calculate_score(avgEyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, noseSize, eyebrowShape, lipFullness, skinSmoothness, symmetry, minValues, maxValues)
 
         return cutenessScore
 
-    def _calculate_score(self, eyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, minValues, maxValues):
+    def _calculate_score(self, avgEyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, noseSize, eyebrowShape, lipFullness, skinSmoothness, symmetry, minValues, maxValues):
         """
         Calculate the cuteness score based on the aspect ratios.
         """
 
-        weights = np.array([0.25, 0.05, 0.25, 0.10, 0.15, 0.10, 0.10])
+        weights = np.array([0.15, 0.05, 0.15, 0.10, 0.10, 0.10, 0.10, 0.05, 0.05, 0.05, 0.05, 0.05])
 
-        normalizedEyeAspectRatio = (eyeAspectRatio - minValues[0]) / (maxValues[0] - minValues[0])
+        normalizedEyeAspectRatio = (avgEyeAspectRatio - minValues[0]) / (maxValues[0] - minValues[0])
         normalizedFaceAspectRatio = (faceAspectRatio - minValues[1]) / (maxValues[1] - minValues[1])
         normalizedEyeArea = (eyeArea - minValues[2]) / (maxValues[2] - minValues[2])
         normalizedCheekFullness = (cheekFullness - minValues[3]) / (maxValues[3] - minValues[3])
         normalizedSmileWidth = (smileWidth - minValues[4]) / (maxValues[4] - minValues[4])
         normalizedFacialProportions = np.mean([(fp - minValues[5]) / (maxValues[5] - minValues[5]) for fp in facialProportions])
         normalizedEyeToFaceRatio = (eyeToFaceRatio - minValues[6]) / (maxValues[6] - minValues[6])
+        normalizedNoseSize = (noseSize - minValues[7]) / (maxValues[7] - minValues[7])
+        normalizedEyebrowShape = (eyebrowShape - minValues[8]) / (maxValues[8] - minValues[8])
+        normalizedLipFullness = (lipFullness - minValues[9]) / (maxValues[9] - minValues[9])
+        EPSILON = 1e-7
+        normalizedSkinSmoothness = (skinSmoothness - minValues[10]) / (maxValues[10] - minValues[10] + EPSILON)
+        normalizedSymmetry = (symmetry - minValues[11]) / (maxValues[11] - minValues[11])
 
-        values = np.array([normalizedEyeAspectRatio, normalizedFaceAspectRatio, normalizedEyeArea, normalizedCheekFullness, normalizedSmileWidth, normalizedFacialProportions, normalizedEyeToFaceRatio])
+        values = np.array([normalizedEyeAspectRatio, normalizedFaceAspectRatio, normalizedEyeArea, normalizedCheekFullness, normalizedSmileWidth, normalizedFacialProportions, normalizedEyeToFaceRatio, normalizedNoseSize, normalizedEyebrowShape, normalizedLipFullness, normalizedSkinSmoothness, normalizedSymmetry])
         values = np.abs(values)
         weightedValues = weights * values
 

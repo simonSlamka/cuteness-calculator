@@ -36,11 +36,11 @@ def preprocess_image_for_landmark_detection(image):
 
     # img = cv2.equalizeHist(img)
 
-    # sobelX = cv2.Sobel(img, cv2.CV_8U, 1, 0, ksize=7)
-    # sobelY = cv2.Sobel(img, cv2.CV_8U, 0, 1, ksize=7)
+    # sobelX = cv2.Sobel(img, cv2.CV_8U, 1, 0, ksize=5)
+    # sobelY = cv2.Sobel(img, cv2.CV_8U, 0, 1, ksize=5)
     # img = cv2.addWeighted(sobelX, 0.1, sobelY, 0.75, 0)
 
-    # img = cv2.GaussianBlur(img, (5, 5), 0)
+    # img = cv2.GaussianBlur(img, (11, 11), 0)
 
     # img = cv2.detailEnhance(img, sigma_s=10, sigma_r=0.75)
 
@@ -79,7 +79,7 @@ def check_landmarks_presence(landmarks):
 
     return True
 
-def resize_image(image, width=800):
+def resize_image(image, width=850):
     """
     Resize the image to a given width.
     """

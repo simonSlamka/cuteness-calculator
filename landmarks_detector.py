@@ -22,10 +22,7 @@ class LandmarksDetector:
         preprocessed = resize_image(preprocessed)
         image = resize_image(image)
 
-        faces = self.detector(preprocessed, 1)
-
-        # if faces is None or len(faces) == 0:
-        #     faces = self.mtcnn.detect_faces(preprocessed)
+        faces = self.detector(preprocessed, upsample_num_times=3)
 
         for _, rect in enumerate(faces):
             shape = self.predictor(preprocessed, rect)
@@ -64,7 +61,7 @@ class LandmarksDetector:
 
             if not check_landmarks_presence(shape):
                 logging.error("Not all landmarks were detected in image {}".format(imagePath))
-                return None, image
+                return None, None
 
             return shape, image
 

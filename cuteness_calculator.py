@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from utils import calculate_euclidean_distance, aspect_ratio, resize_image, check_landmarks_presence
+from utils import calculate_euclidean_distance, aspect_ratio, resize_image, check_landmarks_presence, load_image, preprocess_image_for_landmark_detection
 from landmarks_detector import LandmarksDetector
 import os
 import logging
@@ -30,7 +30,13 @@ class CutenessCalculator:
             for filename in os.listdir(directoryPath):
                 if filename.endswith(".jpg") or filename.endswith(".png") or filename.endswith(".jpeg"):
                     imagePath = os.path.join(directoryPath, filename)
-                    landmarks = self.landmarksDetector.get_landmarks(imagePath)
+                    res = self.landmarksDetector.get_landmarks(imagePath)
+
+                    if res is None:
+                        logging.error(f"Could not get landmarks for image at {imagePath}")
+                        continue
+
+                    landmarks, img = res
 
                     if not check_landmarks_presence(landmarks=landmarks):
                         logging.error(f"Landmarks missing! Skipping image at {imagePath}")
@@ -49,12 +55,14 @@ class CutenessCalculator:
                     noseSize = self.calculate_nose_size(landmarks)
                     eyebrowShape = self.calculate_eyebrow_shape(landmarks)
                     lipFullness = self.calculate_lip_fullness(landmarks)
-                    skinSmoothness = self.calculate_skin_smoothness(imgPath)
+                    skinSmoothness = self.calculate_skin_smoothness(imagePath)
                     symmetry = self.calculate_symmetry(landmarks)
 
                     features = np.array([eyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, noseSize, eyebrowShape, lipFullness, skinSmoothness, symmetry])
                     minValues = np.minimum(minValues, features)
                     maxValues = np.maximum(maxValues, features)
+
+                    logging.info(f"Done with image {imagePath}")
 
             np.save("/tmp/minValues.npy", minValues)
             np.save("/tmp/maxValues.npy", maxValues)

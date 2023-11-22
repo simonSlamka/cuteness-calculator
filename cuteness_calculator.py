@@ -19,7 +19,7 @@ class CutenessCalculator:
         minValues = np.inf * np.ones(12)
         maxValues = -np.inf * np.ones(12)
 
-        if os.path.exists('/tmp/minValues.npy') and os.path.exists("/tmp/maxValues.npy"):
+        if os.path.exists("minValues.npy") and os.path.exists("maxValues.npy"):
             minValues = np.load("/tmp/minValues.npy")
             maxValues = np.load("/tmp/maxValues.npy")
             logging.info("Loaded feature ranges from /tmp")

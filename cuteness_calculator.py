@@ -110,8 +110,7 @@ class CutenessCalculator:
         lipArea = cv2.contourArea(np.array(lips))
         return lipArea
 
-    def calculate_skin_smoothness(self, imagePath):
-        image = cv2.imread(imagePath)
+    def calculate_skin_smoothness(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (5, 5), 0)
         smoothness = cv2.Laplacian(blur, cv2.CV_64F).var()
@@ -185,11 +184,31 @@ class CutenessCalculator:
             return image
 
 
-    def calculate_cuteness(self, imagePath, minValues, maxValues):
+    def calculate_cuteness(self, minValues=None, maxValues=None, imagePath=None, image=None):
         """
         Calculate the cuteness of a face in an image.
         """
-        landmarks, image = self.landmarksDetector.get_landmarks(imagePath)
+        if image is None and isinstance(imagePath, str):
+            image = load_image(imagePath)
+        elif image is None:
+            raise TypeError("Either `imagePath` or `image` must be provided")
+
+        if imagePath:
+            res = self.landmarksDetector.get_landmarks(imagePath=imagePath)
+        else:
+            res = self.landmarksDetector.get_landmarks(image=image)
+
+        if res is None:
+            logging.error(f"Could not get landmarks for image at {imagePath}")
+            return None
+
+        landmarks, image = res
+
+        if minValues is None or maxValues is None:
+            if os.path.exists("minValues.npy") and os.path.exists("maxValues.npy"):
+                minValues = np.load("minValues.npy")
+                maxValues = np.load("maxValues.npy")
+                logging.info("Loaded feature ranges from current working dir")
 
         if not check_landmarks_presence(landmarks):
             logging.error(f"Missing essential landmarks in image at {imagePath}")
@@ -210,7 +229,7 @@ class CutenessCalculator:
         noseSize = self.calculate_nose_size(landmarks)
         eyebrowShape = self.calculate_eyebrow_shape(landmarks)
         lipFullness = self.calculate_lip_fullness(landmarks)
-        skinSmoothness = self.calculate_skin_smoothness(imagePath)
+        skinSmoothness = self.calculate_skin_smoothness(image)
         symmetry = self.calculate_symmetry(landmarks)
 
         faceWidth = calculate_euclidean_distance(landmarks[0], landmarks[16])
@@ -227,7 +246,7 @@ class CutenessCalculator:
         Calculate the cuteness score based on the aspect ratios.
         """
 
-        weights = np.array([0.15, 0.05, 0.15, 0.10, 0.10, 0.10, 0.10, 0.05, 0.05, 0.05, 0.05, 0.05])
+        weights = np.array([0.12987013, 0.09090909, 0.12987013, 0.11688312, 0.07792208, 0.06493506, 0.09090909, 0.05194805, 0.02597403, 0.02597403, 0.1038961, 0.09090909])
 
         normalizedEyeAspectRatio = (avgEyeAspectRatio - minValues[0]) / (maxValues[0] - minValues[0])
         normalizedFaceAspectRatio = (faceAspectRatio - minValues[1]) / (maxValues[1] - minValues[1])

@@ -23,7 +23,7 @@ class LandmarksDetector:
         preprocessed = resize_image(preprocessed)
         image = resize_image(image)
 
-        faces = self.detector(preprocessed, upsample_num_times=1) # ^ CHANGE BACK TO 3
+        faces = self.detector(preprocessed, upsample_num_times=2)
 
         for _, rect in enumerate(faces):
             shape = self.predictor(preprocessed, rect)

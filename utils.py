@@ -60,9 +60,9 @@ def preprocess_image_for_landmark_detection(image):
 
     # img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 6)
 
-    # cv2.namedWindow("Threshold", cv2.WINDOW_NORMAL)
-    # cv2.imshow("Threshold", img)
-    # cv2.resizeWindow("Threshold", 1200, 1200)
+    cv2.namedWindow("Threshold", cv2.WINDOW_NORMAL)
+    cv2.imshow("Threshold", img)
+    cv2.resizeWindow("Threshold", 1200, 1200)
     # cv2.waitKey(0)
 
     return img

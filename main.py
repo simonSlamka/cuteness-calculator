@@ -13,7 +13,7 @@ def main():
 
     minValues, maxValues = cutenessCalculator.calculate_feature_ranges(args.directoryPath, args.imgPath)
 
-    cutenessScore = cutenessCalculator.calculate_cuteness(args.imgPath, minValues, maxValues)
+    cutenessScore = cutenessCalculator.calculate_cuteness(imagePath=args.imgPath, minValues=minValues, maxValues=maxValues)
 
     if cutenessScore is not None:
         print("Cuteness score: {:.2f}".format(cutenessScore))

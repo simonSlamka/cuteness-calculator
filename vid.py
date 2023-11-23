@@ -13,7 +13,10 @@ class Video:
         totalFrames = int(videoStream.get(cv2.CAP_PROP_FRAME_COUNT))
         progressBar = tqdm(total=totalFrames, desc="Processing video", ncols=80)
 
-        _, singleFrame = videoStream.read()
+        res, singleFrame = videoStream.read()
+
+        if not res:
+            raise Exception("Unable to read video file!")
 
         singleFrame = resize_image(singleFrame)
 
@@ -35,6 +38,9 @@ class Video:
                         print(f"Landmark count: {len(landmarks)}")
                         if landmarks is not None:
                             modFrame = self.cutenessCalculator.draw_features(landmarks, frame)
+                            cutenessScore = self.cutenessCalculator.calculate_cuteness(image=frame)
+                            if cutenessScore is not None:
+                                cv2.putText(modFrame, f"Simtoonian Cuteness Index: {cutenessScore:.4f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 0), 2)
                     out.write(modFrame)
                     cv2.namedWindow("frame", cv2.WINDOW_KEEPRATIO)
                     cv2.imshow("frame", modFrame)
@@ -54,5 +60,5 @@ class Video:
 
 
 if __name__ == "__main__":
-    video = Video("emi.mp4", "shape_predictor_68_face_landmarks.dat")
-    video.process_video("emi_superimposed.mp4")
+    video = Video("emi_longer.mp4", "shape_predictor_68_face_landmarks.dat")
+    video.process_video("emi_longer_superimposed.mp4")

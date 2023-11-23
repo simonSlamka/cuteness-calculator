@@ -4,9 +4,8 @@ from utils import calculate_euclidean_distance, aspect_ratio, resize_image, chec
 from landmarks_detector import LandmarksDetector
 import os
 import logging
-import tempfile
 import dlib
-import math
+from tqdm import tqdm
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,58 +19,80 @@ class CutenessCalculator:
         maxValues = -np.inf * np.ones(12)
 
         if os.path.exists("minValues.npy") and os.path.exists("maxValues.npy"):
-            minValues = np.load("/tmp/minValues.npy")
-            maxValues = np.load("/tmp/maxValues.npy")
-            logging.info("Loaded feature ranges from /tmp")
+            minValues = np.load("minValues.npy")
+            maxValues = np.load("maxValues.npy")
+            logging.info("Loaded feature ranges from current working dir")
         else:
             i = 0
             logging.info(f"Calculating feature ranges for images in {directoryPath}")
 
-            for filename in os.listdir(directoryPath):
-                if filename.endswith(".jpg") or filename.endswith(".png") or filename.endswith(".jpeg"):
-                    imagePath = os.path.join(directoryPath, filename)
-                    res = self.landmarksDetector.get_landmarks(imagePath)
+            processedImages = []
+            if os.path.exists("processedImages.npy"):
+                processedImages = np.load("processedImages.npy").tolist()
+            imageFiles = [f for f in os.listdir(directoryPath) if f.endswith((".jpg", ".png", ".jpeg")) and f not in processedImages]
+            progressBar = tqdm(total=len(imageFiles), desc="Processing images", ncols=80)
 
-                    if res is None:
-                        logging.error(f"Could not get landmarks for image at {imagePath}")
-                        continue
+            for filename in imageFiles:
+                imagePath = os.path.join(directoryPath, filename)
+                res = self.landmarksDetector.get_landmarks(imagePath)
 
-                    landmarks, img = res
+                if res is None:
+                    logging.error(f"Could not get landmarks for image at {imagePath}")
+                    progressBar.update()
+                    continue
 
-                    if not check_landmarks_presence(landmarks=landmarks):
-                        logging.error(f"Landmarks missing! Skipping image at {imagePath}")
-                        continue
+                landmarks, img = res
 
-                    i += 1
+                if not check_landmarks_presence(landmarks=landmarks):
+                    logging.error(f"Landmarks missing! Skipping image at {imagePath}")
+                    progressBar.update()
+                    continue
 
-                    eyeAspectRatio = aspect_ratio(np.concatenate((landmarks[36:42], landmarks[42:48]))) / 2.0
-                    faceAspectRatio = calculate_euclidean_distance(landmarks[0], landmarks[16]) / calculate_euclidean_distance(landmarks[8], landmarks[27])
-                    eyeArea = self.calculate_eye_size(landmarks)
-                    cheekFullness = self.calculate_cheek_fullness(landmarks)
-                    smileWidth = self.calculate_smile_width(landmarks)
-                    facialProportions = np.mean(self.calculate_facial_proportions(landmarks))
-                    eyeToFaceRatio = self.calculate_eye_to_face_ratio(landmarks, eyeArea)
+                processedImages.append(filename)
+                np.save("processedImages.npy", np.array(processedImages))
 
-                    noseSize = self.calculate_nose_size(landmarks)
-                    eyebrowShape = self.calculate_eyebrow_shape(landmarks)
-                    lipFullness = self.calculate_lip_fullness(landmarks)
-                    skinSmoothness = self.calculate_skin_smoothness(imagePath)
-                    symmetry = self.calculate_symmetry(landmarks)
+                i += 1
 
-                    features = np.array([eyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, noseSize, eyebrowShape, lipFullness, skinSmoothness, symmetry])
-                    minValues = np.minimum(minValues, features)
-                    maxValues = np.maximum(maxValues, features)
+                eyeAspectRatio = aspect_ratio(np.concatenate((landmarks[36:42], landmarks[42:48]))) / 2.0
+                faceAspectRatio = calculate_euclidean_distance(landmarks[0], landmarks[16]) / calculate_euclidean_distance(landmarks[8], landmarks[27])
+                eyeArea = self.calculate_eye_size(landmarks)
+                cheekFullness = self.calculate_cheek_fullness(landmarks)
+                smileWidth = self.calculate_smile_width(landmarks)
+                facialProportions = np.mean(self.calculate_facial_proportions(landmarks))
+                eyeToFaceRatio = self.calculate_eye_to_face_ratio(landmarks, eyeArea)
 
-                    logging.info(f"Done with image {imagePath}")
+                noseSize = self.calculate_nose_size(landmarks)
+                eyebrowShape = self.calculate_eyebrow_shape(landmarks)
+                lipFullness = self.calculate_lip_fullness(landmarks)
+                skinSmoothness = self.calculate_skin_smoothness(imagePath)
+                symmetry = self.calculate_symmetry(landmarks)
 
-            np.save("/tmp/minValues.npy", minValues)
-            np.save("/tmp/maxValues.npy", maxValues)
+                features = np.array([eyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, noseSize, eyebrowShape, lipFullness, skinSmoothness, symmetry])
+                minValues = np.minimum(minValues, features)
+                maxValues = np.maximum(maxValues, features)
+
+                logging.info(f"Done with image {imagePath}")
+                progressBar.update()
+
+            np.save("minValues.npy", minValues)
+            np.save("maxValues.npy", maxValues)
 
             logging.info(f"Calculated feature intervals for {i} images")
+            progressBar.close()
 
         return minValues, maxValues
 
     def calculate_nose_size(self, landmarks):
+        """
+        The function calculates the size of the nose based on the landmarks provided.
+
+        @param landmarks The `landmarks` parameter is a list of facial landmarks. These landmarks are
+        specific points on the face that are detected by a facial landmark detection algorithm. In this
+        case, the landmarks are being used to calculate the size of the nose. The landmarks are represented
+        as (x, y) coordinates.
+
+        @return the calculated nose size.
+        """
         noseTip = landmarks[33]
         leftNostril = landmarks[31]
         rightNostril = landmarks[35]
@@ -156,10 +177,12 @@ class CutenessCalculator:
             # alpha = 0.75
             # output = cv2.addWeighted(image, alpha, image, 1 - alpha, 0)
 
-            cv2.namedWindow("out", cv2.WINDOW_KEEPRATIO)
-            cv2.imshow("out", image)
-            cv2.resizeWindow("out", 1200, 1200)
-            cv2.waitKey(0)
+            # cv2.namedWindow("out", cv2.WINDOW_KEEPRATIO)
+            # cv2.imshow("out", image)
+            # cv2.resizeWindow("out", 1200, 1200)
+            # cv2.waitKey(0)
+
+            return image
 
 
     def calculate_cuteness(self, imagePath, minValues, maxValues):
@@ -172,7 +195,7 @@ class CutenessCalculator:
             logging.error(f"Missing essential landmarks in image at {imagePath}")
             return None
 
-        self.draw_features(landmarks, image)
+        _ = self.draw_features(landmarks, image)
 
         leftEye = aspect_ratio(landmarks[42:48])
         rightEye = aspect_ratio(landmarks[36:42])

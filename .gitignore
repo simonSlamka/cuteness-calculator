@@ -3,3 +3,6 @@
 *.jpg
 __pycache__/
 *.dat
+*.mp4
+*.mkv
+*.avi

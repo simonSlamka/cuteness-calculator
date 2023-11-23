@@ -13,16 +13,17 @@ class LandmarksDetector:
         self.mtcnn = MTCNN()
         self.predictor = dlib.shape_predictor(predictorPath)
 
-    def get_landmarks(self, imagePath):
+    def get_landmarks(self, imagePath=None, image=None):
         """
         Get the facial landmarks from an image.
         """
-        image = load_image(imagePath)
+        if image is None:
+            image = load_image(imagePath)
         preprocessed = preprocess_image_for_landmark_detection(image=image)
         preprocessed = resize_image(preprocessed)
         image = resize_image(image)
 
-        faces = self.detector(preprocessed, upsample_num_times=3)
+        faces = self.detector(preprocessed, upsample_num_times=1) # ^ CHANGE BACK TO 3
 
         for _, rect in enumerate(faces):
             shape = self.predictor(preprocessed, rect)

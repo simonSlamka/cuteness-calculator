@@ -16,5 +16,142 @@
   {}
 \endgroup
 
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global}
+    \entry{vaswani2017attention}{online}{}
+      \name{author}{8}{}{%
+        {{hash=7f28e84700536646dd6620a0db07ad09}{%
+           family={Vaswani},
+           familyi={V\bibinitperiod},
+           given={Ashish},
+           giveni={A\bibinitperiod}}}%
+        {{hash=62efade83d70f0323fe248755e6c90c5}{%
+           family={Shazeer},
+           familyi={S\bibinitperiod},
+           given={Noam},
+           giveni={N\bibinitperiod}}}%
+        {{hash=06649ebab1ea5cac0250746a19764975}{%
+           family={Parmar},
+           familyi={P\bibinitperiod},
+           given={Niki},
+           giveni={N\bibinitperiod}}}%
+        {{hash=831027ee0ebf22375e2a86afc1881909}{%
+           family={Uszkoreit},
+           familyi={U\bibinitperiod},
+           given={Jakob},
+           giveni={J\bibinitperiod}}}%
+        {{hash=2fd2982e30ebcec93ec1cf76e0d797fd}{%
+           family={Jones},
+           familyi={J\bibinitperiod},
+           given={Llion},
+           giveni={L\bibinitperiod}}}%
+        {{hash=27b07e4eacbf4ef7a1438e3badb7dd8d}{%
+           family={Gomez},
+           familyi={G\bibinitperiod},
+           given={Aidan\bibnamedelima N.},
+           giveni={A\bibinitperiod\bibinitdelim N\bibinitperiod}}}%
+        {{hash=f2bc899b1160163417da7bf510f15d33}{%
+           family={Kaiser},
+           familyi={K\bibinitperiod},
+           given={Lukasz},
+           giveni={L\bibinitperiod}}}%
+        {{hash=95595a0fefb86187cbc36e551017d332}{%
+           family={Polosukhin},
+           familyi={P\bibinitperiod},
+           given={Illia},
+           giveni={I\bibinitperiod}}}%
+      }
+      \strng{namehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{fullhash}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \strng{bibnamehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{authorbibnamehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{authornamehash}{ee273ab30cfb889666f8c4d806eb9ce7}
+      \strng{authorfullhash}{f82970bbd2bdd7a002d2af62b743d5cc}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.CL}
+      \field{eprinttype}{arXiv}
+      \field{title}{Attention Is All You Need}
+      \field{year}{2017}
+      \verb{eprint}
+      \verb 1706.03762
+      \endverb
+    \endentry
+    \entry{wu2020visual}{misc}{}
+      \name{author}{10}{}{%
+        {{hash=cc08ccd680f0d100c2d69f1e6c14cb08}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Bichen},
+           giveni={B\bibinitperiod}}}%
+        {{hash=ddfc044e729d21e1a7a3f06416a23b7f}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Chenfeng},
+           giveni={C\bibinitperiod}}}%
+        {{hash=adbead9d71df1d8d714bb00e495dfd28}{%
+           family={Dai},
+           familyi={D\bibinitperiod},
+           given={Xiaoliang},
+           giveni={X\bibinitperiod}}}%
+        {{hash=ac0e998c1d5497bcca8696c4619bac69}{%
+           family={Wan},
+           familyi={W\bibinitperiod},
+           given={Alvin},
+           giveni={A\bibinitperiod}}}%
+        {{hash=b5ceda3cc3ed62ee97554a17817fd326}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Peizhao},
+           giveni={P\bibinitperiod}}}%
+        {{hash=e78e44bfbf8cd0c655e0f62d1f6f1852}{%
+           family={Yan},
+           familyi={Y\bibinitperiod},
+           given={Zhicheng},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=84b66ce2b6f9f8530dd504fc63a4cc64}{%
+           family={Tomizuka},
+           familyi={T\bibinitperiod},
+           given={Masayoshi},
+           giveni={M\bibinitperiod}}}%
+        {{hash=fa1b97983892cfef89de6a1b63f97bcc}{%
+           family={Gonzalez},
+           familyi={G\bibinitperiod},
+           given={Joseph},
+           giveni={J\bibinitperiod}}}%
+        {{hash=994177386e5a63171a7be588e97df7e5}{%
+           family={Keutzer},
+           familyi={K\bibinitperiod},
+           given={Kurt},
+           giveni={K\bibinitperiod}}}%
+        {{hash=bca94394dca104249af241313226762d}{%
+           family={Vajda},
+           familyi={V\bibinitperiod},
+           given={Peter},
+           giveni={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{6c934f64ab42447982fa8a605bba4a2d}
+      \strng{fullhash}{dde74d55605b89177099f378c1793264}
+      \strng{bibnamehash}{6c934f64ab42447982fa8a605bba4a2d}
+      \strng{authorbibnamehash}{6c934f64ab42447982fa8a605bba4a2d}
+      \strng{authornamehash}{6c934f64ab42447982fa8a605bba4a2d}
+      \strng{authorfullhash}{dde74d55605b89177099f378c1793264}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.CV}
+      \field{eprinttype}{arXiv}
+      \field{title}{Visual Transformers: Token-based Image Representation and Processing for Computer Vision}
+      \field{year}{2020}
+      \verb{eprint}
+      \verb 2006.03677
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
 \endinput
 

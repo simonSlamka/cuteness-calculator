@@ -64,7 +64,7 @@ class CutenessCalculator:
                 noseSize = self.calculate_nose_size(landmarks)
                 eyebrowShape = self.calculate_eyebrow_shape(landmarks)
                 lipFullness = self.calculate_lip_fullness(landmarks)
-                skinSmoothness = self.calculate_skin_smoothness(imagePath)
+                skinSmoothness = self.calculate_skin_smoothness(img)
                 symmetry = self.calculate_symmetry(landmarks)
 
                 features = np.array([eyeAspectRatio, faceAspectRatio, eyeArea, cheekFullness, smileWidth, facialProportions, eyeToFaceRatio, noseSize, eyebrowShape, lipFullness, skinSmoothness, symmetry])
